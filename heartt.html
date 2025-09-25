@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>💖 Anh Yêu Em 💖</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: linear-gradient(to bottom, #ffd6e8, #fff0f5);
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ff4da6;
+      font-size: 50px;
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 0 0 15px #ff69b4, 0 0 30px #ff1493;
+      animation: heartbeat 2s infinite;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    @keyframes heartbeat {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      25% { transform: translate(-50%, -50%) scale(1.05); }
+      50% { transform: translate(-50%, -50%) scale(1); }
+      75% { transform: translate(-50%, -50%) scale(1.05); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+
+    #timer {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: #ff4da6;
+      font-size: 18px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #fff;
+      background: rgba(255, 255, 255, 0.3);
+      padding: 8px 16px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
+      z-index: 99;
+    }
+
+    .music-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(255, 255, 255, 0.3);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 30px;
+      color: #ff4da6;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 100;
+      backdrop-filter: blur(5px);
+      transition: background 0.3s;
+    }
+
+    .music-btn:hover {
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+<div class="message">Anh Yêu Em 💖⭐</div>
+<div id="timer"></div>
+<button class="music-btn" id="toggleMusic">🔊 Tắt nhạc</button>
+
+<audio id="bgMusic" autoplay loop>
+  <source src="https://dl.sndup.net/ptjw/one-of-the-girls.mp3" type="audio/mpeg">
+  Trình duyệt của bạn không hỗ trợ nhạc nền.
+</audio>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let W = window.innerWidth;
+  let H = window.innerHeight;
+  canvas.width = W;
+  canvas.height = H;
+
+  window.addEventListener('resize', () => {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+  });
+
+  const hearts = [];
+  const stars = [];
+  const heartColors = ['#ff4da6', '#ff6ec7', '#ffc3a0', '#ff99cc'];
+  const starColors = ['#ffe6f7', '#ffd9f0', '#fff0f8'];
+
+  class Heart {
+    constructor(x, y) {
+      this.x = x ?? Math.random() * W;
+      this.y = y ?? Math.random() * H;
+      this.size = Math.random() * 0.5 + 0.5;
+      this.opacity = Math.random() * 0.5 + 0.5;
+      this.vx = Math.random() * 1.5 - 0.75;
+      this.vy = Math.random() * 1 - 1.5;
+      this.gravity = 0.02;
+      this.color = heartColors[Math.floor(Math.random() * heartColors.length)];
+    }
+
+    draw() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.scale(this.size, this.size);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(5, -5, 10, -15, 0, -20);
+      ctx.bezierCurveTo(-10, -15, -5, -5, 0, 0);
+      ctx.globalAlpha = this.opacity;
+      ctx.fillStyle = this.color;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = this.color;
+      ctx.fill();
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.vy += this.gravity;
+      this.opacity -= 0.003;
+      if (this.opacity <= 0 || this.y > H + 20) {
+        this.reset();
+      }
+    }
+
+    reset() {
+      this.x = Math.random() * W;
+      this.y = -20;
+      this.opacity = Math.random() * 0.5 + 0.5;
+      this.vx = Math.random() * 1.5 - 0.75;
+      this.vy = Math.random() * 1 - 1.5;
+    }
+  }
+
+  class Star {
+    constructor(x, y) {
+      this.x = x ?? Math.random() * W;
+      this.y = y ?? Math.random() * H;
+      this.radius = Math.random() * 1.5 + 0.5;
+      this.opacity = Math.random() * 0.8 + 0.2;
+      this.fade = Math.random() * 0.02 + 0.005;
+      this.color = starColors[Math.floor(Math.random() * starColors.length)];
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.globalAlpha = this.opacity;
+      ctx.fillStyle = this.color;
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    update() {
+      this.opacity -= this.fade;
+      if (this.opacity <= 0) {
+        this.reset();
+      }
+    }
+
+    reset() {
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+      this.opacity = Math.random() * 0.8 + 0.2;
+    }
+  }
+
+  for (let i = 0; i < 100; i++) hearts.push(new Heart());
+  for (let i = 0; i < 200; i++) stars.push(new Star());
+
+  canvas.addEventListener('click', (e) => {
+    for (let i = 0; i < 5; i++) {
+      hearts.push(new Heart(e.clientX, e.clientY));
+      stars.push(new Star(e.clientX, e.clientY));
+    }
+  });
+
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    stars.forEach(star => {
+      star.draw();
+      star.update();
+    });
+    hearts.forEach(heart => {
+      heart.draw();
+      heart.update();
+    });
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  // Music toggle
+  const bgMusic = document.getElementById('bgMusic');
+  const toggleBtn = document.getElementById('toggleMusic');
+
+  toggleBtn.addEventListener('click', () => {
+    if (bgMusic.paused) {
+      bgMusic.play();
+      toggleBtn.textContent = '🔊 Tắt nhạc';
+    } else {
+      bgMusic.pause();
+      toggleBtn.textContent = '🔈 Bật nhạc';
+    }
+  });
+
+  // Countdown timer from 7/4/2025
+  function updateTimer() {
+    const startDate = new Date("2025-04-07T00:00:00");
+    const now = new Date();
+    const diff = now - startDate;
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    const timerDiv = document.getElementById("timer");
+    timerDiv.innerHTML = `Đã yêu: ${days} ngày ${hours} giờ ${minutes} phút ${seconds} giây 💕`;
+  }
+
+  setInterval(updateTimer, 1000);
+  updateTimer();
+</script>
+
+</body>
+</html>
